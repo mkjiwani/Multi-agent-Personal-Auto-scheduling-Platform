@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — AI Agent Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=4">
+</head>
+<body>
+    <header>
+        <div class="header-brand">
+            <div class="brand-logo">N</div>
+            <div class="brand-text">
+                <h1>NEXUS</h1>
+                <p class="tagline">Multi-Agent Intelligence Platform</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span class="live-text">LIVE</span>
+            </div>
+            <div id="connection-status" class="status-badge disconnected">Disconnected</div>
+        </div>
+    </header>
+
+    <nav id="tabs">
+        <button class="tab active" data-tab="overview">📊 Overview</button>
+        <button class="tab" data-tab="ai-times">🎬 AI-Times</button>
+        <button class="tab" data-tab="mailman">📬 Mailman</button>
+        <button class="tab" data-tab="wallstreet">🐺 Wallstreet</button>
+        <button class="tab" data-tab="news">📰 News Briefer</button>
+        <button class="tab" data-tab="docvault">🗂️ DocVault</button>
+    </nav>
+
+    <!-- Alarm Banner -->
+    <div id="alarm-banner" class="alarm-banner hidden">
+        <span class="alarm-icon">⚠️</span>
+        <span id="alarm-message"></span>
+        <span id="alarm-suggestion"></span>
+        <button id="clear-caches-btn" class="btn btn-small" onclick="clearCaches()">🧹 Clear Caches</button>
+    </div>
+
+    <!-- Tab Content -->
+    <main>
+        <!-- Overview Tab -->
+        <section id="tab-overview" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>CPU</h3>
+                    <div class="gauge-ring" id="cpu-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="gauge-bg" cx="50" cy="50" r="42" />
+                            <circle class="gauge-fill" id="cpu-ring" cx="50" cy="50" r="42" />
+                        </svg>
+                        <span class="gauge-value" id="cpu-value">0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <h3>RAM</h3>
+                    <div class="gauge-ring" id="ram-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="gauge-bg" cx="50" cy="50" r="42" />
+                            <circle class="gauge-fill" id="ram-ring" cx="50" cy="50" r="42" />
+                        </svg>
+                        <span class="gauge-value" id="ram-value">0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <h3>Disk</h3>
+                    <div class="gauge-ring" id="disk-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="gauge-bg" cx="50" cy="50" r="42" />
+                            <circle class="gauge-fill" id="disk-ring" cx="50" cy="50" r="42" />
+                        </svg>
+                        <span class="gauge-value" id="disk-value">0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <h3>Threads</h3>
+                    <div class="gauge-ring" id="threads-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="gauge-bg" cx="50" cy="50" r="42" />
+                        </svg>
+                        <span class="gauge-value" id="threads-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Agent Status</h2>
+            <div id="agent-cards" class="agent-grid"></div>
+
+            <h2>LLM Semaphore</h2>
+            <div id="llm-status" class="llm-status-card">
+                <p>Status: <span id="llm-locked">Idle</span></p>
+                <p>Current Holder: <span id="llm-holder">None</span></p>
+                <p>Waiting: <span id="llm-queue">None</span></p>
+            </div>
+
+            <h2>📧 Daily Digest Schedule</h2>
+            <div class="schedule-grid">
+                <div class="schedule-item">
+                    <label>AI-Times Digest</label>
+                    <input type="time" id="schedule-ai_times" value="08:00" />
+                </div>
+                <div class="schedule-item">
+                    <label>Mailman Summary</label>
+                    <input type="time" id="schedule-mailman" value="09:00" />
+                </div>
+                <div class="schedule-item">
+                    <label>Wallstreet Brief</label>
+                    <input type="time" id="schedule-wallstreet" value="07:30" />
+                </div>
+                <div class="schedule-item">
+                    <label>News Digest</label>
+                    <input type="time" id="schedule-news" value="08:30" />
+                </div>
+                <button onclick="saveSchedules()" class="btn">💾 Save Schedules</button>
+            </div>
+        </section>
+
+        <!-- AI-Times Tab -->
+        <section id="tab-ai-times" class="tab-content">
+            <div class="tab-header">
+                <h2>🎬 AI-Times — YouTube AI Videos</h2>
+                <button onclick="refreshAITimes()" class="btn">🔄 Refresh</button>
+            </div>
+            <h3>📰 AI News</h3>
+            <div id="ai-news-grid" class="video-grid"></div>
+            <h3>🎙️ AI Personalities</h3>
+            <div id="ai-personality-grid" class="video-grid"></div>
+        </section>
+
+        <!-- Mailman Tab -->
+        <section id="tab-mailman" class="tab-content">
+            <div class="tab-header">
+                <h2>📬 Mailman — Email Intelligence</h2>
+                <button onclick="scanMailbox()" class="btn">📥 Scan Now</button>
+            </div>
+            <div id="email-categories" class="categories-grid"></div>
+            <h3>Recent Emails</h3>
+            <div id="email-list" class="email-list"></div>
+        </section>
+
+        <!-- Wallstreet Tab -->
+        <section id="tab-wallstreet" class="tab-content">
+            <div class="tab-header">
+                <h2>🐺 Wallstreet Wolf — Market Tracker</h2>
+                <button onclick="refreshStocks()" class="btn">🔄 Refresh</button>
+            </div>
+            <div id="market-status-banner" class="market-status-banner">
+                <span class="status-dot closed"></span>
+                <span id="market-status-text">Checking market status...</span>
+            </div>
+            <div class="market-grid">
+                <div class="market-block">
+                    <h3>📈 Top 5 Gainers</h3>
+                    <div id="gainers-list"></div>
+                </div>
+                <div class="market-block">
+                    <h3>📉 Top 5 Losers</h3>
+                    <div id="losers-list"></div>
+                </div>
+            </div>
+            <h3>📋 Full Watchlist</h3>
+            <div id="watchlist-table"></div>
+            <h3>💬 LLM Market Commentary</h3>
+            <div id="market-commentary" class="commentary-card"></div>
+            <h3>💱 Currencies & Metals</h3>
+            <div id="currencies-metals" class="currencies-grid"></div>
+        </section>
+
+        <!-- News Briefer Tab -->
+        <section id="tab-news" class="tab-content">
+            <div class="tab-header">
+                <h2>📰 News Briefer</h2>
+                <button onclick="refreshNews()" class="btn">🔄 Refresh</button>
+            </div>
+            <div id="daily-brief" class="brief-card"></div>
+            <div id="news-filters" class="filters"></div>
+            <div id="news-articles" class="articles-grid"></div>
+        </section>
+
+        <!-- DocVault RAG Tab -->
+        <section id="tab-docvault" class="tab-content">
+            <div class="tab-header">
+                <h2>🗂️ DocVault — Ask Your Documents</h2>
+                <button onclick="reindexDocVault()" class="btn">🔄 Re-index All</button>
+            </div>
+
+            <div class="docvault-status" id="docvault-status">
+                <div class="dv-stat">
+                    <span class="dv-stat-value" id="dv-doc-count">0</span>
+                    <span class="dv-stat-label">Documents</span>
+                </div>
+                <div class="dv-stat">
+                    <span class="dv-stat-value" id="dv-chunk-count">0</span>
+                    <span class="dv-stat-label">Chunks</span>
+                </div>
+                <div class="dv-stat">
+                    <span class="dv-stat-value" id="dv-indexed-at">Never</span>
+                    <span class="dv-stat-label">Last Indexed</span>
+                </div>
+                <div class="dv-stat">
+                    <span class="dv-stat-value" id="dv-folder-count">0</span>
+                    <span class="dv-stat-label">Folders</span>
+                </div>
+            </div>
+
+            <!-- Folder Management -->
+            <div class="dv-folder-box">
+                <h3>📁 Indexed Folders</h3>
+                <div class="dv-folder-input-row">
+                    <input type="text" id="dv-new-folder" placeholder="Enter full folder path (e.g. /Users/you/Documents/MyDocs)..." >
+                    <button onclick="addDocVaultFolder()" class="btn dv-add-btn">+ Add Folder</button>
+                </div>
+                <div id="dv-folders-list" class="dv-folders-list"></div>
+            </div>
+
+            <!-- Query Box -->
+            <div class="dv-query-box">
+                <input type="text" id="dv-question" placeholder="Ask a question about your documents..." onkeydown="if(event.key==='Enter')askDocVault()">
+                <button onclick="askDocVault()" class="btn dv-ask-btn">Ask</button>
+            </div>
+
+            <div id="dv-answer" class="dv-answer-card hidden"></div>
+
+            <h3>Query History</h3>
+            <div id="dv-history" class="dv-history-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <span>NEXUS v1.0</span>
+        <span class="footer-separator">·</span>
+        <span>Powered by Ollama + Qwen3</span>
+        <span class="footer-separator">·</span>
+        <span>5 Agents Active</span>
+    </footer>
+
+    <script src="/js/app.js?v=4"></script>
+    <script src="/js/orchestrator.js?v=4"></script>
+    <script src="/js/ai_times.js?v=4"></script>
+    <script src="/js/mailman.js?v=4"></script>
+    <script src="/js/wallstreet.js?v=4"></script>
+    <script src="/js/custom.js?v=4"></script>
+    <script src="/js/docvault.js?v=4"></script>
+</body>
+</html>
